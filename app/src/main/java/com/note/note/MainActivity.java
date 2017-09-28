@@ -25,9 +25,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private ListView listview;
     private SimpleAdapter simple_adapter;
-    private List<Map<String, Object>> dataList;
     private Button addNote;
-    private TextView tv_content;
     private NoteDb DbHelper;
     private SQLiteDatabase DB;
 
@@ -45,7 +43,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
     public void InitView() {
         listview = (ListView) findViewById(R.id.listview);
-        dataList = new ArrayList<Map<String, Object>>();
         addNote = (Button) findViewById(R.id.btn_editnote);
         DbHelper = new NoteDb(this);
         DB = DbHelper.getReadableDatabase();
@@ -64,7 +61,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 startActivity(intent);
             }
         });
-
     }
 
     @Override
@@ -105,15 +101,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     public void RefreshNotesList() {
-        //如果dataList已经有的内容，全部删掉
-        //并且更新simp_adapter
+
+        List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
+        /*
         int size = dataList.size();
         if (size > 0) {
+            //每次清空,并更新simp_adapter
             dataList.removeAll(dataList);
             simple_adapter.notifyDataSetChanged();
         }
-
-        //从数据库读取信息
+        */
+        //从数据库读取最新信息
         Cursor cursor = DB.query("note", null, null, null, null, null, null);
         while (cursor.moveToNext()) {
             int id = cursor.getInt(cursor.getColumnIndex("id"));
@@ -122,11 +120,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("id", id);
             map.put("content", name);
+            map.put("short_content", name.length()<=10?name:name.substring(0,10));
             map.put("date", date);
             dataList.add(map);
         }
         simple_adapter = new SimpleAdapter(this, dataList, R.layout.note_item,
-                new String[]{"content", "date"}, new int[]{
+                new String[]{"short_content", "date"}, new int[]{
                 R.id.content, R.id.date});
         listview.setAdapter(simple_adapter);
     }
